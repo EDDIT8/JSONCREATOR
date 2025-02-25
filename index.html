@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generador de JSON para Vehículos</title>
+    <style>
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            margin-bottom: 10px;
+        }
+        .setting-group {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Formulario de Configuración de Vehículo</h1>
+    <form id="vehicleForm">
+        <div class="section">
+            <label for="id">ID:</label>
+            <input type="text" id="id" name="id" required>
+        </div>
+        <div class="section">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="section">
+            <label for="brandName">Marca:</label>
+            <input type="text" id="brandName" name="brandName" required>
+        </div>
+        <div class="section">
+            <label for="brandLogo">Logo de la Marca:</label>
+            <input type="text" id="brandLogo" name="brandLogo" required>
+        </div>
+        <div class="section">
+            <label for="year">Año:</label>
+            <input type="number" id="year" name="year" required>
+        </div>
+        <div class="section">
+            <label for="category">Categoría:</label>
+            <input type="text" id="category" name="category" required>
+        </div>
+        <div class="section">
+            <label for="description">Descripción:</label>
+            <input type="text" id="description" name="description" required>
+        </div>
+        <div class="section">
+            <label for="image">Imagen:</label>
+            <input type="text" id="image" name="image" required>
+        </div>
+
+        <div id="tuningSections">
+            <!-- Sección de ajustes dinámicos -->
+        </div>
+
+        <button type="button" onclick="addTuningSection()">Agregar Ajuste</button>
+        <button type="submit">Generar JSON</button>
+    </form>
+
+    <h2>JSON Generado:</h2>
+    <pre id="jsonOutput"></pre>
+
+    <script>
+        document.getElementById('vehicleForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const vehicle = {
+                id: formData.get('id'),
+                name: formData.get('name'),
+                brand: {
+                    name: formData.get('brandName'),
+                    logo: formData.get('brandLogo')
+                },
+                year: parseInt(formData.get('year')),
+                category: formData.get('category'),
+                description: formData.get('description'),
+                image: formData.get('image'),
+                tuning: {}
+            };
+
+            const tuningSections = document.querySelectorAll('.tuning-section');
+            tuningSections.forEach(section => {
+                const title = section.querySelector('.tuning-title').value;
+                const settings = {};
+                const settingGroups = section.querySelectorAll('.setting-group');
+                settingGroups.forEach(group => {
+                    const label = group.querySelector('.setting-label').value;
+                    const value = parseFloat(group.querySelector('.setting-value').value);
+                    const min = parseFloat(group.querySelector('.setting-min').value);
+                    const max = parseFloat(group.querySelector('.setting-max').value);
+                    const leftLabel = group.querySelector('.setting-left-label').value;
+                    const rightLabel = group.querySelector('.setting-right-label').value;
+                    settings[label] = { label, value, min, max, leftLabel, rightLabel };
+                });
+                vehicle.tuning[title] = { title, settings };
+            });
+
+            document.getElementById('jsonOutput').textContent = JSON.stringify(vehicle, null, 2);
+        });
+
+        function addTuningSection() {
+            const section = document.createElement('div');
+            section.className = 'section tuning-section';
+            section.innerHTML = `
+                <h3>Ajuste</h3>
+                <label>Título del Ajuste:</label>
+                <input type="text" class="tuning-title" required>
+                <div class="setting-group">
+                    <label>Etiqueta del Parámetro:</label>
+                    <input type="text" class="setting-label" required>
+                    <label>Valor:</label>
+                    <input type="number" class="setting-value" required>
+                    <label>Mínimo:</label>
+                    <input type="number" class="setting-min" required>
+                    <label>Máximo:</label>
+                    <input type="number" class="setting-max" required>
+                    <label>Etiqueta Izquierda:</label>
+                    <input type="text" class="setting-left-label">
+                    <label>Etiqueta Derecha:</label>
+                    <input type="text" class="setting-right-label">
+                </div>
+                <button type="button" onclick="addSettingGroup(this)">Agregar Parámetro</button>
+            `;
+            document.getElementById('tuningSections').appendChild(section);
+        }
+
+        function addSettingGroup(button) {
+            const group = document.createElement('div');
+            group.className = 'setting-group';
+            group.innerHTML = `
+                <label>Etiqueta del Parámetro:</label>
+                <input type="text" class="setting-label" required>
+                <label>Valor:</label>
+                <input type="number" class="setting-value" required>
+                <label>Mínimo:</label>
+                <input type="number" class="setting-min" required>
+                <label>Máximo:</label>
+                <input type="number" class="setting-max" required>
+                <label>Etiqueta Izquierda:</label>
+                <input type="text" class="setting-left-label">
+                <label>Etiqueta Derecha:</label>
+                <input type="text" class="setting-right-label">
+                <button type="button" onclick="removeSettingGroup(this)">Eliminar Parámetro</button>
+            `;
+            button.parentElement.appendChild(group);
+        }
+
+        function removeSettingGroup(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</body>
+</html>
